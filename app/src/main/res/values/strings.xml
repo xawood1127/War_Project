@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">War Project</string>
+    <string name="play">Start Game</string>
+    <string name="help">Help</string>
+    <string name="help_details">Instructions</string>
+    <string name="top_wins">Wins: 0</string>
+    <string name="bottom_wins">Wins: 0</string>
+    <string name="top_cards">0</string>
+    <string name="bottom_cards">0</string>
+</resources>

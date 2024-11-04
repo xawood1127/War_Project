@@ -5,7 +5,6 @@ import android.os.Handler;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,7 +20,8 @@ public class MainActivity extends AppCompatActivity {
     private ImageView topCard, bottomCard;
     private TextView topCount, bottomCount, topWins, bottomWins;
     private Button dealBTN;
-    private LinearLayout topCardBacks, bottomCardBacks;
+    private ImageView[] topWarCards;
+    private ImageView[] bottomWarCards;
 
     private int topWinCount = 0;
     private int bottomWinCount = 0;
@@ -42,6 +42,14 @@ public class MainActivity extends AppCompatActivity {
         bottomWins = findViewById(R.id.bottom_card_wins);
         dealBTN = findViewById(R.id.dealBTN);
 
+        //Creates one array for the top and one for the bottom
+        topWarCards = new ImageView[]{
+                findViewById(R.id.top_back1), findViewById(R.id.top_back2), findViewById(R.id.top_back3)
+        };
+        bottomWarCards = new ImageView[]{
+                findViewById(R.id.bottom_back1), findViewById(R.id.bottom_back2), findViewById(R.id.bottom_back3)
+        };
+
         // Initialize the game
         initializeGame();
 
@@ -57,19 +65,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void initializeGame() {
         // Load deck of card images
-        deck = new ArrayList<>();
         loadDeck();
 
-        // Shuffle and distribute cards
+        //Shuffle and divide deck for both players
         Collections.shuffle(deck);
         topDeck = new ArrayList<>(deck.subList(0, 26));
         bottomDeck = new ArrayList<>(deck.subList(26, 52));
-
-        // Initial counters
         updateCounters();
     }
 
+    //Add each card drawable reference to deck by finding suit + rank
     private void loadDeck() {
+        deck = new ArrayList<>();
         String[] suits = {"clubs", "diamonds", "hearts", "spades"};
         for (String suit : suits) {
             for (int rank = 2; rank <= 14; rank++) {
@@ -81,26 +88,30 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void deal() {
+        //Hides cards shown in war
         showWarCards(false);
 
         if (topDeck.isEmpty() || bottomDeck.isEmpty()) {
-            String winner = topDeck.size() > 0 ? "Player 1 Wins the Game!" : "Player 2 Wins the Game!";
+            String winner = !topDeck.isEmpty() ? "Player 1 Wins the Game!" : "Player 2 Wins the Game!";
             showToast("Game Over! " + winner);
             dealBTN.setEnabled(false);
             return;
         }
 
+        //Disables button until value comparisons are made
         dealBTN.setEnabled(false);
 
+        //Pulls card from the top of each player's deck and displays them
         int card1 = topDeck.remove(0);
         int card2 = bottomDeck.remove(0);
-
         topCard.setImageResource(card1);
         bottomCard.setImageResource(card2);
 
+        //Get the value of each card and initializes them to variables
         int card1Value = getCardValue(card1);
         int card2Value = getCardValue(card2);
 
+        //Compares card values and updates toast, win count, and deck count
         if (card1Value > card2Value) {
             showToast("Player 1 Wins this Round!");
             topDeck.add(card1);
@@ -112,21 +123,22 @@ public class MainActivity extends AppCompatActivity {
             bottomDeck.add(card2);
             bottomWinCount++;
         } else {
+            //If values are the same, calls initiateWar method
             initiateWar(card1, card2);
         }
 
         updateCounters();
-        handler.postDelayed(() -> dealBTN.setEnabled(true), 500);
+        handler.postDelayed(() -> dealBTN.setEnabled(true), 1000);
     }
 
     private void initiateWar(int card1, int card2) {
+        //Creates a "warPot" to store all cards that may be lost in war
         ArrayList<Integer> warPot = new ArrayList<>();
         warPot.add(card1);
         warPot.add(card2);
 
-        // Show the initial cards being compared
+        //Shows the hidden card stacks and sets image to the back until revealed
         showWarCards(true);
-
         topCard.setImageResource(R.drawable.back);
         bottomCard.setImageResource(R.drawable.back);
 
@@ -136,26 +148,27 @@ public class MainActivity extends AppCompatActivity {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (topDeck.size() < 5 || bottomDeck.size() < 5) {
-                    String winner = topDeck.size() < 5 ? "Player 2 wins the game!" : "Player 1 wins the game!";
+                //If a player doesn't have enough cards for war, they lose and game ends
+                if (topDeck.size() < 4 || bottomDeck.size() < 4) {
+                    String winner = topDeck.size() < 4 ? "Player 2 wins the game!" : "Player 1 wins the game!";
                     showToast(winner);
                     dealBTN.setEnabled(false);
                     return;
                 }
 
-                // Draw four additional cards for each player
-                for (int i = 0; i < 4; i++) {
+                // Draw three hidden cards for each player
+                for (int i = 0; i < 3; i++) {
                     warPot.add(topDeck.remove(0));
                     warPot.add(bottomDeck.remove(0));
                 }
 
-                // Draw the second war card for each player
-                int warCard1 = topDeck.remove(0); // First player's war card
-                int warCard2 = bottomDeck.remove(0); // Second player's war card
+                // Draw the fourth war card for each player to compare
+                int warCard1 = topDeck.remove(0);
+                int warCard2 = bottomDeck.remove(0);
                 warPot.add(warCard1);
                 warPot.add(warCard2);
 
-                // Show the second war cards
+                // Show the war cards
                 topCard.setImageResource(warCard1);
                 bottomCard.setImageResource(warCard2);
 
@@ -182,22 +195,25 @@ public class MainActivity extends AppCompatActivity {
         }, 1000); // Delay between war steps for visibility
     }
 
+    //Method to update the visibility of the war stack
     private void showWarCards(boolean show) {
         int visibility = show ? View.VISIBLE : View.GONE;
-        findViewById(R.id.top_back1).setVisibility(visibility);
-        findViewById(R.id.top_back2).setVisibility(visibility);
-        findViewById(R.id.top_back3).setVisibility(visibility);
-        findViewById(R.id.bottom_back1).setVisibility(visibility);
-        findViewById(R.id.bottom_back2).setVisibility(visibility);
-        findViewById(R.id.bottom_back3).setVisibility(visibility);
+        for (ImageView card : topWarCards) {
+            card.setVisibility(visibility);
+        }
+        for (ImageView card : bottomWarCards) {
+            card.setVisibility(visibility);
+        }
     }
 
+    //Gets the resId saved from the card and replaces all non  digit characters with "" leaving with value
     private int getCardValue(int resId) {
         String resName = getResources().getResourceEntryName(resId);
         String rankString = resName.replaceAll("\\D+", "");
         return Integer.parseInt(rankString);
     }
 
+    //Method to update the win count and card counts for each player after every round
     private void updateCounters() {
         topCount.setText(String.valueOf(topDeck.size()));
         bottomCount.setText(String.valueOf(bottomDeck.size()));
@@ -206,9 +222,13 @@ public class MainActivity extends AppCompatActivity {
         bottomWins.setText("Wins: " + bottomWinCount);
     }
 
+    //When a toast is shown it calls the dismissToast method to eliminate a toast queue
     private void showToast(String message) {
-        dismissToast();
-        currentToast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
+        if (currentToast == null) {
+            currentToast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
+        } else {
+            currentToast.setText(message);
+        }
         currentToast.show();
     }
 

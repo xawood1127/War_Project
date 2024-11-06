@@ -15,6 +15,7 @@ import java.util.Collections;
 
 public class MainActivity extends AppCompatActivity {
 
+    // Declare variables for card deck, players' decks, UI elements, and counters
     private ArrayList<Integer> deck;
     private ArrayList<Integer> topDeck, bottomDeck;
     private ImageView topCard, bottomCard;
@@ -26,7 +27,7 @@ public class MainActivity extends AppCompatActivity {
     private int topWinCount = 0;
     private int bottomWinCount = 0;
     private Toast currentToast;
-    private Handler handler = new Handler();
+    private Handler handler = new Handler(); // Handler for delays
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         bottomWins = findViewById(R.id.bottom_card_wins);
         dealBTN = findViewById(R.id.dealBTN);
 
-        //Creates one array for the top and one for the bottom
+        // Creates arrays to hold extra cards displayed during a "war"
         topWarCards = new ImageView[]{
                 findViewById(R.id.top_back1), findViewById(R.id.top_back2), findViewById(R.id.top_back3)
         };
@@ -50,68 +51,69 @@ public class MainActivity extends AppCompatActivity {
                 findViewById(R.id.bottom_back1), findViewById(R.id.bottom_back2), findViewById(R.id.bottom_back3)
         };
 
-        // Initialize the game
+        // Initialize the game setup
         initializeGame();
 
-        // Set up button click listener for each round
+        // Set up button click listener to play a round
         dealBTN.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dismissToast();
-                deal();
+                dismissToast(); // Dismiss previous toasts
+                deal(); // Deal cards for a round
             }
         });
     }
 
     private void initializeGame() {
-        // Load deck of card images
+        // Load the deck with card images
         loadDeck();
 
-        //Shuffle and divide deck for both players
+        // Shuffle and split deck between two players
         Collections.shuffle(deck);
         topDeck = new ArrayList<>(deck.subList(0, 26));
         bottomDeck = new ArrayList<>(deck.subList(26, 52));
-        updateCounters();
+        updateCounters(); // Update card counts
     }
 
-    //Add each card drawable reference to deck by finding suit + rank
+    // Add references for each card drawable to deck based on suit and rank
     private void loadDeck() {
         deck = new ArrayList<>();
         String[] suits = {"clubs", "diamonds", "hearts", "spades"};
         for (String suit : suits) {
             for (int rank = 2; rank <= 14; rank++) {
-                String cardName = suit + rank;
+                String cardName = suit + rank; // Construct card name
                 int resId = getResources().getIdentifier(cardName, "drawable", getPackageName());
-                deck.add(resId);
+                deck.add(resId); // Add card to deck
             }
         }
     }
 
     private void deal() {
-        //Hides cards shown in war
+        // Hide extra war cards initially
         showWarCards(false);
 
+        // Check if either deck is empty to determine if game is over
         if (topDeck.isEmpty() || bottomDeck.isEmpty()) {
             String winner = !topDeck.isEmpty() ? "Player 1 Wins the Game!" : "Player 2 Wins the Game!";
             showToast("Game Over! " + winner);
-            dealBTN.setEnabled(false);
+            dealBTN.setEnabled(false); // Disable the deal button
             return;
         }
 
-        //Disables button until value comparisons are made
+        // Temporarily disable deal button during round processing
         dealBTN.setEnabled(false);
 
-        //Pulls card from the top of each player's deck and displays them
+        // Draw the top card from each player's deck
         int card1 = topDeck.remove(0);
         int card2 = bottomDeck.remove(0);
         topCard.setImageResource(card1);
         bottomCard.setImageResource(card2);
 
-        //Get the value of each card and initializes them to variables
+        // Get the numeric values of each drawn card
         int card1Value = getCardValue(card1);
         int card2Value = getCardValue(card2);
 
-        //Compares card values and updates toast, win count, and deck count
+        // Compare cards and update decks, win counts, and messages based on the outcome
         if (card1Value > card2Value) {
             showToast("Player 1 Wins this Round!");
             topDeck.add(card1);
@@ -123,32 +125,32 @@ public class MainActivity extends AppCompatActivity {
             bottomDeck.add(card2);
             bottomWinCount++;
         } else {
-            //If values are the same, calls initiateWar method
+            // If card values are equal, initiate "war"
             initiateWar(card1, card2);
         }
 
-        updateCounters();
-        handler.postDelayed(() -> dealBTN.setEnabled(true), 1000);
+        updateCounters(); // Update UI with new counts
+        handler.postDelayed(() -> dealBTN.setEnabled(true), 1000); // Re-enable button after delay
     }
 
     private void initiateWar(int card1, int card2) {
-        //Creates a "warPot" to store all cards that may be lost in war
+        // Create a "war pot" to hold the disputed cards
         ArrayList<Integer> warPot = new ArrayList<>();
         warPot.add(card1);
         warPot.add(card2);
 
-        //Shows the hidden card stacks and sets image to the back until revealed
+        // Show face-down war cards and set images to card back
         showWarCards(true);
         topCard.setImageResource(R.drawable.back);
         bottomCard.setImageResource(R.drawable.back);
 
-        // Disable the deal button until the war is resolved
+        // Disable the deal button during war
         dealBTN.setEnabled(false);
 
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                //If a player doesn't have enough cards for war, they lose and game ends
+                // Check if a player has fewer than 4 cards to play a war
                 if (topDeck.size() < 4 || bottomDeck.size() < 4) {
                     String winner = topDeck.size() < 4 ? "Player 2 wins the game!" : "Player 1 wins the game!";
                     showToast(winner);
@@ -156,23 +158,23 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
 
-                // Draw three hidden cards for each player
+                // Add three hidden war cards from each player's deck to the pot
                 for (int i = 0; i < 3; i++) {
                     warPot.add(topDeck.remove(0));
                     warPot.add(bottomDeck.remove(0));
                 }
 
-                // Draw the fourth war card for each player to compare
+                // Draw the fourth war card from each player's deck
                 int warCard1 = topDeck.remove(0);
                 int warCard2 = bottomDeck.remove(0);
                 warPot.add(warCard1);
                 warPot.add(warCard2);
 
-                // Show the war cards
+                // Show the final war cards for comparison
                 topCard.setImageResource(warCard1);
                 bottomCard.setImageResource(warCard2);
 
-                // Determine the winner of the war
+                // Determine the result of the war based on the war cards
                 int warCard1Value = getCardValue(warCard1);
                 int warCard2Value = getCardValue(warCard2);
 
@@ -185,17 +187,18 @@ public class MainActivity extends AppCompatActivity {
                     bottomDeck.addAll(warPot);
                     bottomWinCount += warPot.size() / 2;
                 } else {
+                    // If tied, continue the war
                     showToast("It's a tie! War continues!");
-                    initiateWar(warCard1, warCard2); // Continue the war
+                    initiateWar(warCard1, warCard2); // Recursive call for new war
                 }
 
-                updateCounters();
-                dealBTN.setEnabled(true); // Re-enable the deal button after the war is resolved
+                updateCounters(); // Update counts and scores
+                dealBTN.setEnabled(true); // Re-enable the deal button
             }
-        }, 1000); // Delay between war steps for visibility
+        }, 1000); // Delay for war visibility
     }
 
-    //Method to update the visibility of the war stack
+    // Method to toggle the visibility of war stacks
     private void showWarCards(boolean show) {
         int visibility = show ? View.VISIBLE : View.GONE;
         for (ImageView card : topWarCards) {
@@ -206,14 +209,14 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //Gets the resId saved from the card and replaces all non  digit characters with "" leaving with value
+    // Extracts the rank value from the card's resource ID
     private int getCardValue(int resId) {
         String resName = getResources().getResourceEntryName(resId);
         String rankString = resName.replaceAll("\\D+", "");
         return Integer.parseInt(rankString);
     }
 
-    //Method to update the win count and card counts for each player after every round
+    // Updates player win counts and deck counts after each round
     private void updateCounters() {
         topCount.setText(String.valueOf(topDeck.size()));
         bottomCount.setText(String.valueOf(bottomDeck.size()));
@@ -222,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
         bottomWins.setText("Wins: " + bottomWinCount);
     }
 
-    //When a toast is shown it calls the dismissToast method to eliminate a toast queue
+    // Shows a toast message, ensuring only one toast is visible at a time
     private void showToast(String message) {
         if (currentToast == null) {
             currentToast = Toast.makeText(this, message, Toast.LENGTH_SHORT);
@@ -232,6 +235,7 @@ public class MainActivity extends AppCompatActivity {
         currentToast.show();
     }
 
+    // Dismiss the current toast if it exists
     private void dismissToast() {
         if (currentToast != null) {
             currentToast.cancel();

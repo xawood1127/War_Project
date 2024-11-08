@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.ArrayList;
@@ -27,7 +28,11 @@ public class MainActivity extends AppCompatActivity {
     private int topWinCount = 0;
     private int bottomWinCount = 0;
     private Toast currentToast;
-    private Handler handler = new Handler(); // Handler for delays
+    private final Handler handler = new Handler(); // Handler for delays
+
+    private final ArrayList<Integer> cheatSequence = new ArrayList<>();
+    private final int[] secretCodePlayer1 = {1, 1, 2, 2, 1, 2}; // Player 1 wins
+    private final int[] secretCodePlayer2 = {2, 2, 1, 1, 2, 1}; // Player 2 wins
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +65,21 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 dismissToast(); // Dismiss previous toasts
                 deal(); // Deal cards for a round
+            }
+        });
+
+        // Set up click handlers for cheat sequence
+        topCard.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkCheatSequence(1);
+            }
+        });
+
+        bottomCard.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                checkCheatSequence(2);
             }
         });
     }
@@ -95,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
         // Check if either deck is empty to determine if game is over
         if (topDeck.isEmpty() || bottomDeck.isEmpty()) {
             String winner = !topDeck.isEmpty() ? "Player 1 Wins the Game!" : "Player 2 Wins the Game!";
-            showToast("Game Over! " + winner);
+            showGameOverDialog(winner);
             dealBTN.setEnabled(false); // Disable the deal button
             return;
         }
@@ -241,5 +261,66 @@ public class MainActivity extends AppCompatActivity {
             currentToast.cancel();
             currentToast = null;
         }
+    }
+
+    private void checkCheatSequence(int input) {
+        cheatSequence.add(input);
+
+        // Limit the sequence length to the maximum code length
+        if (cheatSequence.size() > secretCodePlayer1.length) {
+            cheatSequence.remove(0); // Remove the oldest input if the sequence is too long
+        }
+
+        // Check for Player 1's and Player 2's cheat codes
+        if (cheatSequence.size() == secretCodePlayer1.length) {
+            boolean isPlayer1Match = true;
+            boolean isPlayer2Match = true;
+
+            // Check Player 1's cheat code
+            for (int i = 0; i < secretCodePlayer1.length; i++) {
+                if (cheatSequence.get(i) != secretCodePlayer1[i]) {
+                    isPlayer1Match = false;
+                }
+                if (cheatSequence.get(i) != secretCodePlayer2[i]) {
+                    isPlayer2Match = false;
+                }
+            }
+
+            // Activate the cheat if a match is found for Player 1
+            if (isPlayer1Match) {
+                showToast("Cheat Activated! Player 1 Wins!");
+                topDeck.addAll(bottomDeck); // Give all cards to Player 1
+                bottomDeck.clear(); // Empty Player 2's deck
+                updateCounters(); // Update the UI counters
+                showGameOverDialog("Player 1");
+                dealBTN.setEnabled(false);
+                cheatSequence.clear(); // Reset the sequence
+            }
+            // Activate the cheat if a match is found for Player 2
+            else if (isPlayer2Match) {
+                showToast("Cheat Activated! Player 2 Wins!");
+                bottomDeck.addAll(topDeck); // Give all cards to Player 2
+                topDeck.clear(); // Empty Player 1's deck
+                updateCounters(); // Update the UI counters
+                showGameOverDialog("Player 2");
+                dealBTN.setEnabled(false);
+                cheatSequence.clear(); // Reset the sequence
+            }
+        }
+    }
+
+    private void showGameOverDialog(String winner) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.CustomAlertDialog);
+        builder.setTitle("Game Over")
+                .setMessage(winner + " has won the game!")
+                .setCancelable(false) // Prevent closing the dialog without choosing an option
+                .setPositiveButton("New Game", (dialog, which) -> {
+                    initializeGame(); // Restart the game
+                    dealBTN.setEnabled(true); // Re-enable the deal button
+                })
+                .setNegativeButton("Exit", (dialog, which) -> finish()); // Exit the app
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 }

@@ -309,6 +309,34 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //Create help menu on app bar
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.help_menu, menu);
+        return true;
+    }
+
+    //Show help Popup on click
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_help) {
+                // Show the help dialog when the Help button is clicked
+                showHelpDialog();
+                return true;
+        }
+        return false;
+    }
+    
+    //Create Help Text Popup
+    private void showHelpDialog() {
+
+        new AlertDialog.Builder(this)
+                .setTitle("Help")
+                .setMessage("How to play.\n\n1. Click the Deal Button to start game.\n2. Click Deal again to play one round of War.\n3.The highest Card will Win.\n4.Face cards are worth their order value.\n(ie. Jacks = 11, Kings = 13, etc).\n5.Ace cards are worth 14.\n6.The Card's Suit will add 1 to its value when compared against certain Suits.\n7.Clubs beat Diamonds. Diamonds beat Hearts. Hearts beat Spades. Spades beat Clubs.\n8.Winning a Round adds your opponent's card to your deck.\n9.Keep Playing until one player has every card in their deck.")
+                .setPositiveButton("OK", (dialog, which) -> dialog.dismiss()) // Close button
+                .setCancelable(true)  // Allows dismissing the dialog by tapping outside
+                .show();
+    }
+    
     private void showGameOverDialog(String winner) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.CustomAlertDialog);
         builder.setTitle("Game Over")

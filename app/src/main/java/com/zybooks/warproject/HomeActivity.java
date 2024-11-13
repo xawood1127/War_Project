@@ -16,10 +16,6 @@ public class HomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        // Find the TextView by ID
-        TextView homeTitle = findViewById(R.id.home_title);
-        homeTitle.setText("Welcome to the Home Screen");
-
         // Find the Button by ID
         Button simpleButton = findViewById(R.id.home_button);
 

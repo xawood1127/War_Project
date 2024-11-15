@@ -8,6 +8,9 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.animation.ObjectAnimator;
+import android.animation.AnimatorSet;
+import android.animation.Animator;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,6 +33,9 @@ public class MainActivity extends AppCompatActivity {
     private int bottomWinCount = 0;
     private Toast currentToast;
     private final Handler handler = new Handler(); // Handler for delays
+    private float centerX = 2f;
+    private ImageView leftSword, rightSword;
+    private float originalLeftSword, originalRightSword;
 
     private final ArrayList<Integer> cheatSequence = new ArrayList<>();
     private final int[] secretCodePlayer1 = {1, 1, 2, 2, 1, 2}; // Player 1 wins
@@ -50,6 +56,8 @@ public class MainActivity extends AppCompatActivity {
         topWins = findViewById(R.id.top_card_wins);
         bottomWins = findViewById(R.id.bottom_card_wins);
         dealBTN = findViewById(R.id.dealBTN);
+        leftSword = findViewById(R.id.left_sword);
+        rightSword = findViewById(R.id.right_sword);
 
         // Creates arrays to hold extra cards displayed during a "war"
         topWarCards = new ImageView[]{
@@ -179,6 +187,50 @@ public class MainActivity extends AppCompatActivity {
         }, 1000); // Delay before comparing cards
     }
 
+    //Sword animation for initiate war
+    private AnimatorSet createSwordAnimation() {
+        // Save the original positions of the swords
+        originalLeftSword = leftSword.getTranslationX();
+        originalRightSword = rightSword.getTranslationX();
+
+        leftSword.setVisibility(View.VISIBLE);
+        rightSword.setVisibility(View.VISIBLE);
+
+        // Creates sword animation
+        ObjectAnimator leftSwordAnim = ObjectAnimator.ofFloat(leftSword, "translationX", centerX);
+        leftSwordAnim.setDuration(1000);
+        ObjectAnimator rightSwordAnim = ObjectAnimator.ofFloat(rightSword, "translationX", centerX);
+        rightSwordAnim.setDuration(1000);
+
+        AnimatorSet swordAnimationSet = new AnimatorSet();
+        swordAnimationSet.playTogether(leftSwordAnim, rightSwordAnim);
+
+        // Adds an animation listener to reset the visibility after the animation ends
+        swordAnimationSet.addListener(new Animator.AnimatorListener() {
+            @Override
+            public void onAnimationStart(Animator animation) {
+                //add flying animation on start
+            }
+
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                leftSword.setTranslationX(originalLeftSword);
+                leftSword.setVisibility(View.GONE);
+                rightSword.setTranslationX(originalRightSword);
+                rightSword.setVisibility(View.GONE);
+
+            }
+
+            @Override
+            public void onAnimationCancel(Animator animation) {}
+
+            @Override
+            public void onAnimationRepeat(Animator animation) {}
+        });
+
+        return swordAnimationSet;
+    }
+
     private void initiateWar(int card1, int card2) {
         // Create a "war pot" to hold the disputed cards
         ArrayList<Integer> warPot = new ArrayList<>();
@@ -192,6 +244,10 @@ public class MainActivity extends AppCompatActivity {
 
         // Disable the deal button during war
         dealBTN.setEnabled(false);
+
+        // Trigger sword animation when war is declared
+        nimatorSet swordAnimationSet = createSwordAnimation();
+        swordAnimationSet.start();
 
         handler.postDelayed(new Runnable() {
             @Override

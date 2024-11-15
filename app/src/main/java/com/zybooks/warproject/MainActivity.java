@@ -1,5 +1,6 @@
 package com.zybooks.warproject;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -33,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
     private final ArrayList<Integer> cheatSequence = new ArrayList<>();
     private final int[] secretCodePlayer1 = {1, 1, 2, 2, 1, 2}; // Player 1 wins
     private final int[] secretCodePlayer2 = {2, 2, 1, 1, 2, 1}; // Player 2 wins
+    private final int[] secretCodeWar = {1, 2, 1, 2, 1, 2}; // Initiates war
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +95,11 @@ public class MainActivity extends AppCompatActivity {
         Collections.shuffle(deck);
         topDeck = new ArrayList<>(deck.subList(0, 26));
         bottomDeck = new ArrayList<>(deck.subList(26, 52));
+        topCard.setImageResource(R.drawable.back);
+        bottomCard.setImageResource(R.drawable.back);
+        showWarCards(false);
+        topWinCount = 0;
+        bottomWinCount = 0;
         updateCounters(); // Update card counts
     }
 
@@ -114,9 +122,9 @@ public class MainActivity extends AppCompatActivity {
 
         // Check if either deck is empty to determine if game is over
         if (topDeck.isEmpty() || bottomDeck.isEmpty()) {
-            String winner = !topDeck.isEmpty() ? "Player 1 Wins the Game!" : "Player 2 Wins the Game!";
+            String winner = !topDeck.isEmpty() ? "Player 2 Wins the Game!" : "Player 1 Wins the Game!";
             showGameOverDialog(winner);
-            dealBTN.setEnabled(false); // Disable the deal button
+            dealBTN.setEnabled(false);
             return;
         }
 
@@ -129,28 +137,46 @@ public class MainActivity extends AppCompatActivity {
         topCard.setImageResource(card1);
         bottomCard.setImageResource(card2);
 
-        // Get the numeric values of each drawn card
-        int card1Value = getCardValue(card1);
-        int card2Value = getCardValue(card2);
+        // Add a delay before comparing the cards
+        handler.postDelayed(() -> {
+            // Get the numeric values and suit of each drawn card
+            int card1Value = getCardValue(card1);
+            int card2Value = getCardValue(card2);
+            int card1Suit = getSuitValue(card1);
+            int card2Suit = getSuitValue(card2);
 
-        // Compare cards and update decks, win counts, and messages based on the outcome
-        if (card1Value > card2Value) {
-            showToast("Player 1 Wins this Round!");
-            topDeck.add(card1);
-            topDeck.add(card2);
-            topWinCount++;
-        } else if (card2Value > card1Value) {
-            showToast("Player 2 Wins this Round!");
-            bottomDeck.add(card1);
-            bottomDeck.add(card2);
-            bottomWinCount++;
-        } else {
-            // If card values are equal, initiate "war"
-            initiateWar(card1, card2);
-        }
+            // Add values based on suits
+            if (card1Suit == 1 && card2Suit == 2) card1Value++;
+            else if (card1Suit == 2 && card2Suit == 3) card1Value++;
+            else if (card1Suit == 3 && card2Suit == 4) card1Value++;
+            else if (card1Suit == 4 && card2Suit == 1) card1Value++;
+            else if (card2Suit == 1 && card1Suit == 2) card2Value++;
+            else if (card2Suit == 2 && card1Suit == 3) card2Value++;
+            else if (card2Suit == 3 && card1Suit == 4) card2Value++;
+            else if (card2Suit == 4 && card1Suit == 1) card2Value++;
 
-        updateCounters(); // Update UI with new counts
-        handler.postDelayed(() -> dealBTN.setEnabled(true), 1000); // Re-enable button after delay
+            // Compare the cards after the delay
+            if (card1Value > card2Value) {
+                showToast("Player 2 Wins this Round!");
+                topDeck.add(card1);
+                topDeck.add(card2);
+                topWinCount++;
+            } else if (card2Value > card1Value) {
+                showToast("Player 1 Wins this Round!");
+                bottomDeck.add(card1);
+                bottomDeck.add(card2);
+                bottomWinCount++;
+            } else {
+                // If tied, add a delay before initiating the war
+                handler.postDelayed(() -> {
+                    initiateWar(card1, card2);
+                }, 1000); // Delay before initiating war (e.g., 1 second)
+            }
+
+            updateCounters();
+            handler.postDelayed(() -> dealBTN.setEnabled(true), 1000); // Re-enable button after delay
+
+        }, 1000); // Delay before comparing cards
     }
 
     private void initiateWar(int card1, int card2) {
@@ -172,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 // Check if a player has fewer than 4 cards to play a war
                 if (topDeck.size() < 4 || bottomDeck.size() < 4) {
-                    String winner = topDeck.size() < 4 ? "Player 2 wins the game!" : "Player 1 wins the game!";
+                    String winner = topDeck.size() < 4 ? "Player 1 wins the game!" : "Player 2 wins the game!";
                     showToast(winner);
                     dealBTN.setEnabled(false);
                     return;
@@ -199,11 +225,11 @@ public class MainActivity extends AppCompatActivity {
                 int warCard2Value = getCardValue(warCard2);
 
                 if (warCard1Value > warCard2Value) {
-                    showToast("Player 1 wins the war!");
+                    showToast("Player 2 wins the war!");
                     topDeck.addAll(warPot);
                     topWinCount += warPot.size() / 2;
                 } else if (warCard2Value > warCard1Value) {
-                    showToast("Player 2 wins the war!");
+                    showToast("Player 1 wins the war!");
                     bottomDeck.addAll(warPot);
                     bottomWinCount += warPot.size() / 2;
                 } else {
@@ -234,6 +260,24 @@ public class MainActivity extends AppCompatActivity {
         String resName = getResources().getResourceEntryName(resId);
         String rankString = resName.replaceAll("\\D+", "");
         return Integer.parseInt(rankString);
+    }
+
+    //Extracts the suit value from the card's resource ID
+    private int getSuitValue(int resId) {
+        String resName = getResources().getResourceEntryName(resId);
+        String suitString = resName.replaceAll("\\d+", "");
+        switch (suitString) {
+            case "clubs":
+                return 1;
+            case "diamonds":
+                return 2;
+            case "hearts":
+                return 3;
+            case "spades":
+                return 4;
+            default:
+                return 0;
+        }
     }
 
     // Updates player win counts and deck counts after each round
@@ -275,6 +319,7 @@ public class MainActivity extends AppCompatActivity {
         if (cheatSequence.size() == secretCodePlayer1.length) {
             boolean isPlayer1Match = true;
             boolean isPlayer2Match = true;
+            boolean isWarMatch = true;
 
             // Check Player 1's cheat code
             for (int i = 0; i < secretCodePlayer1.length; i++) {
@@ -284,29 +329,63 @@ public class MainActivity extends AppCompatActivity {
                 if (cheatSequence.get(i) != secretCodePlayer2[i]) {
                     isPlayer2Match = false;
                 }
+                if (cheatSequence.get(i) != secretCodeWar[i]) {
+                    isWarMatch = false;
+                }
             }
 
             // Activate the cheat if a match is found for Player 1
             if (isPlayer1Match) {
                 showToast("Cheat Activated! Player 1 Wins!");
-                topDeck.addAll(bottomDeck); // Give all cards to Player 1
-                bottomDeck.clear(); // Empty Player 2's deck
-                updateCounters(); // Update the UI counters
+                topDeck.addAll(bottomDeck);
+                bottomDeck.clear();
+                updateCounters();
                 showGameOverDialog("Player 1");
                 dealBTN.setEnabled(false);
-                cheatSequence.clear(); // Reset the sequence
+                cheatSequence.clear();
             }
             // Activate the cheat if a match is found for Player 2
             else if (isPlayer2Match) {
                 showToast("Cheat Activated! Player 2 Wins!");
-                bottomDeck.addAll(topDeck); // Give all cards to Player 2
-                topDeck.clear(); // Empty Player 1's deck
-                updateCounters(); // Update the UI counters
+                bottomDeck.addAll(topDeck);
+                topDeck.clear();
+                updateCounters();
                 showGameOverDialog("Player 2");
                 dealBTN.setEnabled(false);
+                cheatSequence.clear();
+            }
+            // Activate the cheat for initiating war
+            else if (isWarMatch) {
+                showToast("Cheat Activated! Immediate War!");
+                if (!topDeck.isEmpty() && !bottomDeck.isEmpty()) {
+                    int card1 = topDeck.remove(0);
+                    int card2 = bottomDeck.remove(0);
+                    initiateWar(card1, card2);
+                } else {
+                    showToast("Not enough cards to start a war!");
+                }
                 cheatSequence.clear(); // Reset the sequence
             }
         }
+    }
+
+    private void showGameOverDialog(String winner) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.CustomAlertDialog);
+        builder.setTitle("Game Over")
+                .setMessage(winner + " has won the game!")
+                .setCancelable(false) // Prevent closing the dialog without choosing an option
+                .setPositiveButton("New Game", (dialog, which) -> {
+                    initializeGame(); // Restart the game
+                    dealBTN.setEnabled(true); // Re-enable the deal button
+                })
+                .setNegativeButton("Exit", (dialog, which) -> {
+                    Intent intent = new Intent(MainActivity.this, HomeActivity.class);
+                    startActivity(intent);
+                    finish(); // Close MainActivity
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
     }
 
     //Create help menu on app bar
@@ -328,7 +407,6 @@ public class MainActivity extends AppCompatActivity {
     
     //Create Help Text Popup
     private void showHelpDialog() {
-
         new AlertDialog.Builder(this)
                 .setTitle("Help")
                 .setMessage("How to play.\n\n1. Click the Deal Button to start game.\n2. Click Deal again to play one round of War.\n3.The highest Card will Win.\n4.Face cards are worth their order value.\n(ie. Jacks = 11, Kings = 13, etc).\n5.Ace cards are worth 14.\n6.The Card's Suit will add 1 to its value when compared against certain Suits.\n7.Clubs beat Diamonds. Diamonds beat Hearts. Hearts beat Spades. Spades beat Clubs.\n8.Winning a Round adds your opponent's card to your deck.\n9.Keep Playing until one player has every card in their deck.")
@@ -337,18 +415,4 @@ public class MainActivity extends AppCompatActivity {
                 .show();
     }
     
-    private void showGameOverDialog(String winner) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.CustomAlertDialog);
-        builder.setTitle("Game Over")
-                .setMessage(winner + " has won the game!")
-                .setCancelable(false) // Prevent closing the dialog without choosing an option
-                .setPositiveButton("New Game", (dialog, which) -> {
-                    initializeGame(); // Restart the game
-                    dealBTN.setEnabled(true); // Re-enable the deal button
-                })
-                .setNegativeButton("Exit", (dialog, which) -> finish()); // Exit the app
-
-        AlertDialog dialog = builder.create();
-        dialog.show();
-    }
 }

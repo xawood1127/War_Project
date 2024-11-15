@@ -165,4 +165,27 @@
         app:layout_constraintEnd_toStartOf="@id/bottom_card"
         android:layout_marginEnd="24dp" />
 
+    <!-- Left Sword -->
+    <ImageView
+        android:id="@+id/left_sword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/sword"
+        android:translationX="-500dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- Right Sword -->
+    <ImageView
+        android:id="@+id/right_sword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/sword"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:translationX="500dp"
+        android:scaleX = "-1" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

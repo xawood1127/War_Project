@@ -127,6 +127,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //Sets animation for the cards to be dealt
+    private void animateCard(ImageView card, float startY, float endY, long duration) {
+        ObjectAnimator translateY = ObjectAnimator.ofFloat(card, "translationY", startY, endY);
+        ObjectAnimator scaleX = ObjectAnimator.ofFloat(card, "scaleX", 0.5f, 1f); // Scale from 50% to 100%
+        ObjectAnimator scaleY = ObjectAnimator.ofFloat(card, "scaleY", 0.5f, 1f); // Scale from 50% to 100%
+        ObjectAnimator rotation = ObjectAnimator.ofFloat(card, "rotation", 0f, 360f); // Optional rotation
+
+        // Group animations into a set
+        AnimatorSet animationSet = new AnimatorSet();
+        animationSet.playTogether(translateY, scaleX, scaleY, rotation);
+        animationSet.setDuration(duration);
+        animationSet.start();
+    }
+
     private void deal() {
         // Hide extra war cards initially
         showWarCards(false);
@@ -147,6 +161,13 @@ public class MainActivity extends AppCompatActivity {
         int card2 = bottomDeck.remove(0);
         topCard.setImageResource(card1);
         bottomCard.setImageResource(card2);
+
+        // Get screen height for animation
+        float screenHeight = getResources().getDisplayMetrics().heightPixels;
+
+        // Animate the cards
+        animateCard(topCard, -screenHeight, 0, 1000); // Fly in from the top
+        animateCard(bottomCard, screenHeight, 0, 1000); // Fly in from the bottom
 
         // Add a delay before comparing the cards
         handler.postDelayed(() -> {
@@ -278,6 +299,13 @@ public class MainActivity extends AppCompatActivity {
                 // Show the final war cards for comparison
                 topCard.setImageResource(warCard1);
                 bottomCard.setImageResource(warCard2);
+
+                // Get screen height for animation
+                float screenHeight = getResources().getDisplayMetrics().heightPixels;
+
+                // Animate the cards
+                animateCard(topCard, -screenHeight, 0, 1000); // Fly in from the top
+                animateCard(bottomCard, screenHeight, 0, 1000); // Fly in from the bottom
 
                 // Determine the result of the war based on the war cards
                 int warCard1Value = getCardValue(warCard1);

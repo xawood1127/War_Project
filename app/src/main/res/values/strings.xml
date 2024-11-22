@@ -1,10 +1,19 @@
 <resources>
     <string name="app_name">War Project</string>
-    <string name="play">Start Game</string>
+    <string name="play">New Game</string>
+    <string name="continue_game">Continue Game</string>
     <string name="help">Help</string>
-    <string name="help_details">Instructions</string>
+    <string name="help_details">"How to play.\n\n1. Click the Deal Button to start game.\n2. Click Deal again to play one round of War.\n3.The highest Card will Win.\n4.Face cards are worth their order value.\n(ie. Jacks = 11, Kings = 13, etc).\n5.Ace cards are worth 14.\n6.The Card's Suit will add 1 to its value when compared against certain Suits.\n7.Clubs beat Diamonds. Diamonds beat Hearts. Hearts beat Spades. Spades beat Clubs.\n8.Winning a Round adds your opponent's card to your deck.\n9.Keep Playing until one player has every card in their deck."</string>
     <string name="top_wins">Wins: 0</string>
     <string name="bottom_wins">Wins: 0</string>
     <string name="top_cards">0</string>
     <string name="bottom_cards">0</string>
+    <string name="logo_string">"Let's go to war!"</string>
+    <string name="p1_win">Player 1 wins!</string>
+    <string name="p2_win">Player 2 wins!</string>
+    <string name="p1_war">Player 1 wins the war!</string>
+    <string name="p2_war">Player 2 wins the war!</string>
+    <string name="war_tie">"It's a tie! War continues!"</string>
+    <string name="ok">OK</string>
+    <string name="game_over">Game Over!</string>
 </resources>

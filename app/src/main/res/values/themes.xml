@@ -3,6 +3,21 @@
         <item name="android:buttonStyle">@style/buttonStyle</item>
         <item name="android:textColor">@color/white</item>
         <item name="alertDialogTheme">@style/CustomAlertDialog</item>
+        <item name="android:colorBackground">@color/black</item>
+    </style>
+
+    <style name="Theme.WarProject.Light" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:buttonStyle">@style/buttonStyle</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="alertDialogTheme">@style/CustomAlertDialog</item>
+        <item name="android:colorBackground">@color/Table_Green</item>
+    </style>
+
+    <style name="Theme.WarProject.Table" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:buttonStyle">@style/buttonStyle</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="alertDialogTheme">@style/CustomAlertDialog</item>
+        <item name="android:colorBackground">@color/Table_Brown</item>
     </style>
 
     <style name="CustomAlertDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
@@ -10,6 +25,8 @@
         <item name="android:textColor">@color/black</item>
         <item name="android:buttonStyle">@style/buttonStyle</item>
     </style>
+
+
 
     <style name="buttonStyle" parent="Widget.AppCompat.Button">
         <item name="android:background">@color/white</item>

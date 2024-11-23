@@ -7,4 +7,10 @@
         android:icon="@drawable/help_icon"
         android:title="@string/help"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_home"
+        android:icon="@drawable/home_icon"
+        android:title="Home"
+        app:showAsAction="ifRoom" />
 </menu>

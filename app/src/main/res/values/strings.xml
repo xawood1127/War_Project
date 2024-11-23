@@ -16,4 +16,10 @@
     <string name="war_tie">"It's a tie! War continues!"</string>
     <string name="ok">OK</string>
     <string name="game_over">Game Over!</string>
+    <string name="theme_choose">Select</string>
+    <string name="default_theme">Dark</string>
+    <string name="red_button">Red Table</string>
+    <string name="blue_button">Blue Table</string>
+    <string name="light_button">Light</string>
+    <string name="green_button">Green Table</string>
 </resources>

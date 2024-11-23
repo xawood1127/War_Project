@@ -188,4 +188,46 @@
         android:translationX="500dp"
         android:scaleX = "-1" />
 
+    <RadioGroup
+        android:id="@+id/color_radio_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="16dp">
+
+        <RadioButton
+            android:id="@+id/radio_green"
+            android:layout_width="60dp"
+            android:layout_height="50dp"
+            android:background="@color/Table_Green" />
+
+        <RadioButton
+            android:id="@+id/radio_blue"
+            android:layout_width="60dp"
+            android:layout_height="50dp"
+            android:background="@color/Table_Blue" />
+
+        <RadioButton
+            android:id="@+id/radio_light"
+            android:layout_width="60dp"
+            android:layout_height="50dp"
+            android:background="@color/Table_Brown" />
+
+        <RadioButton
+            android:id="@+id/radio_red"
+            android:layout_width="60dp"
+            android:layout_height="50dp"
+            android:background="@color/Table_Red" />
+
+        <RadioButton
+            android:id="@+id/radio_dark"
+            android:layout_width="60dp"
+            android:layout_height="50dp"
+            android:checked="true"
+            android:background="@color/black" />
+    </RadioGroup>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

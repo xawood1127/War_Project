@@ -53,6 +53,8 @@ public class MainActivity extends AppCompatActivity {
     private final int[] secretCodePlayer2 = {2, 2, 1, 1, 2, 1}; // Player 2 wins
     private final int[] secretCodeWar = {1, 2, 1, 2, 1, 2}; // Initiates war
 
+    private RadioGroup colorRadioGroup;
+
     // ----------------------------------------
     // 1. Activity Lifecycle
     // ----------------------------------------
@@ -92,6 +94,42 @@ public class MainActivity extends AppCompatActivity {
         bottomCard.setOnClickListener(v -> checkCheatSequence(2));
     }
 
+     private void setAppTheme(String themeName) {
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("AppTheme", themeName);
+        editor.apply();
+
+
+        recreate();
+    }
+
+    private void loadTheme() {
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        String themeName = prefs.getString("AppTheme", "Default");
+
+        switch (themeName) {
+            case "Green":
+                setTheme(R.style.Theme_WarProject_Table_);
+                break;
+            case "Blue":
+                setTheme(R.style.Theme_WarProject_Blue);
+                break;
+            case "Light":
+                setTheme(R.style.Theme_WarProject_Light);
+                break;
+            case "Red":
+                setTheme(R.style.Theme_WarProject_Red);
+                break;
+            case "Dark":
+                setTheme(R.style.Theme_WarProject_Dark);
+                break;
+            default:
+                setTheme(R.style.Theme_WarProject); // Default theme
+                break;
+        }
+    }
+    
     @Override
     protected void onPause() {
         super.onPause();

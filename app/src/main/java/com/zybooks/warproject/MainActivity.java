@@ -5,6 +5,7 @@ import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
@@ -12,6 +13,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -61,8 +63,16 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Load the theme before setting the content view
+        loadTheme();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Retrieve the saved radio button ID and set it as checked
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        int selectedThemeId = prefs.getInt("SelectedThemeId", R.id.radio_dark); // Default to Dark
+        colorRadioGroup = findViewById(R.id.color_radio_group);
+        colorRadioGroup.check(selectedThemeId); // Set the saved radio button as checked
 
         // Initialize UI elements
         topCard = findViewById(R.id.top_card);
@@ -85,6 +95,23 @@ public class MainActivity extends AppCompatActivity {
         // Load game state or start a new game
         loadGameState();
 
+        colorRadioGroup = findViewById(R.id.color_radio_group);
+
+        colorRadioGroup.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.radio_green) {
+                setAppTheme("Green", checkedId);
+            } else if (checkedId == R.id.radio_blue) {
+                setAppTheme("Blue", checkedId);
+            } else if (checkedId == R.id.radio_light) {
+                setAppTheme("Light", checkedId);
+            } else if (checkedId == R.id.radio_dark) {
+                setAppTheme("Dark", checkedId);
+            } else if (checkedId == R.id.radio_red) {
+                setAppTheme("Red", checkedId);
+            }
+        });
+
+
         dealBTN.setOnClickListener(v -> {
             dismissToast();
             deal();
@@ -94,42 +121,6 @@ public class MainActivity extends AppCompatActivity {
         bottomCard.setOnClickListener(v -> checkCheatSequence(2));
     }
 
-     private void setAppTheme(String themeName) {
-        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("AppTheme", themeName);
-        editor.apply();
-
-
-        recreate();
-    }
-
-    private void loadTheme() {
-        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
-        String themeName = prefs.getString("AppTheme", "Default");
-
-        switch (themeName) {
-            case "Green":
-                setTheme(R.style.Theme_WarProject_Table_);
-                break;
-            case "Blue":
-                setTheme(R.style.Theme_WarProject_Blue);
-                break;
-            case "Light":
-                setTheme(R.style.Theme_WarProject_Light);
-                break;
-            case "Red":
-                setTheme(R.style.Theme_WarProject_Red);
-                break;
-            case "Dark":
-                setTheme(R.style.Theme_WarProject_Dark);
-                break;
-            default:
-                setTheme(R.style.Theme_WarProject); // Default theme
-                break;
-        }
-    }
-    
     @Override
     protected void onPause() {
         super.onPause();
@@ -546,6 +537,47 @@ public class MainActivity extends AppCompatActivity {
         AlertDialog dialog = builder.create();
         dialog.show();
     }
+
+    private void setAppTheme(String themeName, int radioButtonId) {
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("AppTheme", themeName);
+        editor.putInt("SelectedThemeId", radioButtonId); // Save the radio button ID
+        editor.apply();
+
+        // Restart the activity to apply the new theme
+        Intent intent = getIntent();
+        finish();
+        overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out); // Optional animation
+        startActivity(intent);
+    }
+
+
+    private void loadTheme() {
+        SharedPreferences prefs = getSharedPreferences("AppPrefs", MODE_PRIVATE);
+        String themeName = prefs.getString("AppTheme", "Default");
+        switch (themeName) {
+            case "Green":
+                setTheme(R.style.Theme_WarProject_Table);
+                break;
+            case "Blue":
+                setTheme(R.style.Theme_WarProject_Blue);
+                break;
+            case "Light":
+                setTheme(R.style.Theme_WarProject_Light);
+                break;
+            case "Red":
+                setTheme(R.style.Theme_WarProject_Red);
+                break;
+            case "Dark":
+                setTheme(R.style.Theme_WarProject_Dark);
+                break;
+            default:
+                setTheme(R.style.Theme_WarProject); // Default theme
+                break;
+        }
+    }
+
 
     // ----------------------------------------
     // 6. Menu Handling
